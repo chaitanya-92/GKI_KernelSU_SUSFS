@@ -38,6 +38,8 @@ jobs:
           CONFIG_JSON=$(cat "${{ inputs.config_file }}" | jq -c .)
 
           # Build { "include": [ {android_version:..., kernel_version:..., sublevel:..., os_patch_level:..., variant: ...}, ... ] }
+          # Optional per-item metadata such as kernel_release/build_timestamp/build_number
+          # flows through untouched when present.
           # Always include Normal, and add any explicit per-item variant from the config.
           FINAL=$(jq -cn \
             --argjson cfg "$CONFIG_JSON" '
@@ -52,6 +54,9 @@ jobs:
                       kernel_version: $version_parts[1],
                       sublevel: $item.sublevel,
                       os_patch_level: $item.date,
+                      kernel_release: $item.kernel_release,
+                      build_timestamp: $item.build_timestamp,
+                      build_number: $item.build_number,
                       variant: "Normal"
                     }
                 ]
@@ -64,10 +69,13 @@ jobs:
                       kernel_version: $version_parts[1],
                       sublevel: $item.sublevel,
                       os_patch_level: $item.date,
+                      kernel_release: $item.kernel_release,
+                      build_timestamp: $item.build_timestamp,
+                      build_number: $item.build_number,
                       variant: $item.variant
                     }
                 ]
-                | unique_by([.android_version, .kernel_version, .sublevel, .os_patch_level, .variant])
+                | unique_by([.android_version, .kernel_version, .sublevel, .os_patch_level, .variant, .kernel_release, .build_timestamp, .build_number])
               )
             }')
 
@@ -85,6 +93,9 @@ jobs:
       kernel_version: ${{ matrix.kernel_version }}
       sublevel: ${{ matrix.sublevel }}
       os_patch_level: ${{ matrix.os_patch_level }}
+      kernel_release: ${{ matrix.kernel_release }}
+      build_timestamp: ${{ matrix.build_timestamp }}
+      build_number: ${{ matrix.build_number }}
       variant: ${{ matrix.variant }}
       feature_set: ${{ inputs.feature_set }}
       use_repo: ${{ inputs.use_repo }}

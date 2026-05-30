@@ -10,6 +10,9 @@ inputs:
   os_patch_level:
     required: true
     type: string
+  kernel_release:
+    required: false
+    type: string
   variant:
     required: true
     type: string
@@ -38,10 +41,14 @@ runs:
           fi
         fi
 
-        FILE_NAME="${{ inputs.kernel_version }}.${SUBLEVEL}-${{ inputs.android_version }}-${{ inputs.os_patch_level }}"
-        # Append variant only when it's provided and not the default 'Normal'
-        if [ -n "${{ inputs.variant }}" ] && [ "${{ inputs.variant }}" != "Normal" ]; then
-          FILE_NAME="${FILE_NAME}-${{ inputs.variant }}"
+        if [ -n "${{ inputs.kernel_release }}" ]; then
+          FILE_NAME="${{ inputs.kernel_release }}"
+        else
+          FILE_NAME="${{ inputs.kernel_version }}.${SUBLEVEL}-${{ inputs.android_version }}-${{ inputs.os_patch_level }}"
+          # Append variant only when it's provided and not the default 'Normal'
+          if [ -n "${{ inputs.variant }}" ] && [ "${{ inputs.variant }}" != "Normal" ]; then
+            FILE_NAME="${FILE_NAME}-${{ inputs.variant }}"
+          fi
         fi
 
         echo "SUBLEVEL=$SUBLEVEL" >> "$GITHUB_ENV"

@@ -47,7 +47,10 @@
     },
     {
       "sublevel": "89",
-      "date": "2025-06"
+      "date": "2025-06",
+      "kernel_release": "6.6.89-android15-8-g8e4be6b47e40-ab14134548-4k",
+      "build_timestamp": "Fri Sep 19 15:34:56 UTC 2025",
+      "build_number": "1"
     },
     {
       "sublevel": "92",

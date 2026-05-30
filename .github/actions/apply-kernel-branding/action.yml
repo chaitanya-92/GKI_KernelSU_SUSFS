@@ -4,6 +4,9 @@ inputs:
   variant:
     description: 'Variant of kernel to apply branding to'
     required: true
+  kernel_release:
+    description: 'Exact kernel release string to emit from setlocalversion'
+    required: false
   kernel_version:
     description: 'Kernel version (e.g., 6.1)'
     required: true
@@ -35,7 +38,9 @@ runs:
 
         tac scripts/setlocalversion | awk '!seen && /^echo / {seen=1; next} 1' | tac > scripts/setlocalversion.tmp
         mv scripts/setlocalversion.tmp scripts/setlocalversion
-        if [[ ${{ inputs.version }} == "android15-6.6" || ${{ inputs.version }} == "android16-6.12" ]]; then
+        if [[ -n "${{ inputs.kernel_release }}" ]]; then
+          echo "echo \"${{ inputs.kernel_release }}\"" >> scripts/setlocalversion
+        elif [[ ${{ inputs.version }} == "android15-6.6" || ${{ inputs.version }} == "android16-6.12" ]]; then
           KERNEL_STRING="$KERNEL_PART.${{ inputs.sublevel }}-$ANDROID_PART"
           echo "echo \"$KERNEL_STRING-Wild\"" >> scripts/setlocalversion
         else
