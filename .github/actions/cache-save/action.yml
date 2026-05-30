@@ -41,8 +41,14 @@ runs:
         GH_TOKEN: ${{ inputs.github_token }}
         TARGET_REPO: "${{ github.repository }}"
       run: |
+        set -euo pipefail
         # Archive, Split, and Upload Cache
         if [ "${{ inputs.debug }}" = "true" ]; then set -x; fi
+
+        if [ -z "${GH_TOKEN:-}" ]; then
+          echo "::warning::No GitHub token provided for cache save. Skipping optional cache upload."
+          exit 0
+        fi
         
         if [ "${{ inputs.working_dir }}" != "" ]; then 
           cd "${{ inputs.working_dir }}"
@@ -137,8 +143,10 @@ runs:
             for part in "${FILENAME}".part*; do
               echo "Uploading $part..."
               if ! upload_with_retry "$part"; then
-                echo "::error::Failed to upload part $part after multiple attempts."
-                exit 1
+                echo "::warning::Failed to upload part $part after multiple attempts. Continuing without saving cache."
+                rm -f "${FILENAME}".part* "$FILENAME" || true
+                echo "::endgroup::"
+                exit 0
               fi
               rm -f "$part"
             done
@@ -146,8 +154,10 @@ runs:
           else
             echo "Uploading $FILENAME..."
             if ! upload_with_retry "$FILENAME"; then
-              echo "::error::Failed to upload $FILENAME after multiple attempts."
-              exit 1
+              echo "::warning::Failed to upload $FILENAME after multiple attempts. Continuing without saving cache."
+              rm -f "$FILENAME" || true
+              echo "::endgroup::"
+              exit 0
             fi
             rm -f "$FILENAME"
           fi

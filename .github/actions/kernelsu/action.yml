@@ -25,6 +25,12 @@ runs:
         KSU_GIT_TAG="$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.1")"
         sed -i "s/^KSU_VERSION_TAG_FALLBACK := v0.0.1$/KSU_VERSION_TAG_FALLBACK := ${KSU_GIT_TAG}/" Kbuild
 
+        if ! grep -q '^KSU_MANAGER_PACKAGE' Kbuild; then
+          perl -0pi -e 's/\nifdef KSU_MANAGER_PACKAGE/\nKSU_MANAGER_PACKAGE ?= com.lordsunext.manager\n\nifdef KSU_MANAGER_PACKAGE/' Kbuild
+        else
+          sed -i 's|^KSU_MANAGER_PACKAGE.*$|KSU_MANAGER_PACKAGE ?= com.lordsunext.manager|' Kbuild
+        fi
+
 
     - name: Enable KernelSU Config
       shell: bash
